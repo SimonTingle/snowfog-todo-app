@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    
     <title>My Khan Academy Inspired To-Do App</title>
     
     <style>
@@ -16,17 +15,34 @@
         ul { list-style-type: none; padding: 0; }
         
         /* Styles individual dynamically added list entries with a prominent blue left border and spacing. */
-        li { padding: 8px; margin-bottom: 5px; background: #eee; border-left: 5px solid #008fcc; display: flex; justify-content: space-between; }
+        li { 
+            padding: 8px; 
+            margin-bottom: 5px; 
+            background: #eee; 
+            border-left: 5px solid #008fcc; 
+            display: flex; 
+            justify-content: space-between; /* Why: Pushes task text to the left and action buttons to the right for a cleaner layout. */
+            align-items: center; /* Why: Keeps text and buttons vertically centered with each other. */
+            cursor: grab; /* Why: Visual cue (hand icon) telling the user this item can be picked up and dragged. */
+        }
+
+        li:active {
+            cursor: grabbing; /* Why: Gives immediate tactile feedback that the item is currently being held. */
+        }
         
         /* Simple spacing layout rule to separate the user inputs from the task items below. */
         .input-section { margin-bottom: 20px; }
+
+        /* Styles for the new action buttons and drag-and-drop visual states */
+        .actions button { margin-left: 5px; cursor: pointer; } /* Why: Adds breathing room between Edit/Delete buttons. */
+        
+        li.dragging { opacity: 0.5; } /* Why: Lowers visibility of the original item so the user knows exactly which item they are moving. */
+        
+        li.over { background-color: #d0ebff; border-style: dashed; } /* Why: Highlights the target drop zone so the user knows where the item will land. */
     </style>
 </head>
 <body>
 
-   
-   
-   
     <div class="container">
         
         <h2>My Task Tracker</h2>
@@ -57,6 +73,10 @@
         // =========================================================================
         var tasks = ["Learn Variables", "Study Arrays", "Master Functions"];
 
+        // Variables to keep track of the items being dragged
+        // Why: The drag-and-drop API operates in separate events. We need a global variable to remember what we picked up when it comes time to drop it.
+        var dragStartIndex;
+
         // =========================================================================
         // LESSON: Functions & Return Values
         // Creating reusable blocks of code to handle updating the user interface.
@@ -76,7 +96,49 @@
 
                 // Create a list item element dynamically
                 var listItem = document.createElement("li");
-                listItem.textContent = currentTaskText;
+                
+                // Set up HTML5 Drag and Drop properties
+                listItem.draggable = true; /* Why: Activates the browser's native drag engine. */
+                listItem.dataset.index = i; /* Why: Attaches the array index directly to the HTML element so we know which specific data it relates to later. */
+
+                // Create a span to hold the task text (keeps it separate from buttons)
+                // Why: Wrapping text in a span prevents the text from merging with the buttons, making DOM manipulation easier.
+                var textSpan = document.createElement("span");
+                textSpan.textContent = currentTaskText;
+                listItem.appendChild(textSpan);
+
+                // Create a container for our Edit and Delete buttons
+                // Why: Grouping buttons in a div allows us to use Flexbox to push them to the far right together.
+                var actionsDiv = document.createElement("div");
+                actionsDiv.className = "actions";
+
+                // Edit Button
+                // Why: Completes the "Update" part of CRUD (Create, Read, Update, Delete) allowing users to fix typos without deleting and retyping.
+                var editBtn = document.createElement("button");
+                editBtn.textContent = "Edit";
+                editBtn.dataset.index = i;
+                editBtn.onclick = function() { editTask(this.dataset.index); };
+
+                // Delete Button
+                // Why: Completes the "Delete" part of CRUD, keeping the list from growing infinitely.
+                var deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "Delete";
+                deleteBtn.dataset.index = i;
+                deleteBtn.onclick = function() { deleteTask(this.dataset.index); };
+
+                // Add buttons to the div, and the div to the list item
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(deleteBtn);
+                listItem.appendChild(actionsDiv);
+
+                // Attach Drag and Drop Event Listeners
+                // Why: We must explicitly tell the browser what code to run during every phase of the drag lifecycle.
+                listItem.addEventListener('dragstart', dragStart);
+                listItem.addEventListener('dragover', dragOver);
+                listItem.addEventListener('drop', dragDrop);
+                listItem.addEventListener('dragenter', dragEnter);
+                listItem.addEventListener('dragleave', dragLeave);
+                listItem.addEventListener('dragend', dragEnd);
 
                 // Append the built list item to our main task list container
                 taskList.appendChild(listItem);
@@ -107,6 +169,74 @@
                 // Fallback logical condition alert if user attempts to submit blank text
                 alert("Please enter a valid task description!");
             }
+        }
+
+        // =========================================================================
+        // LESSON: Array Splice & Updates (New Concepts)
+        // Functions to handle deleting and editing existing data in our array.
+        // =========================================================================
+        function deleteTask(index) {
+            // Remove 1 item at the specified index
+            // Why: .splice() directly modifies the original array, which is the most efficient way to remove a targeted item.
+            tasks.splice(index, 1);
+            renderTasks();
+        }
+
+        function editTask(index) {
+            // Prompt the user for a new value, defaulting to the current text
+            // Why: window.prompt is a built-in browser tool. It's the fastest way to get user input without building a complex custom modal window.
+            var updatedTask = prompt("Update your task:", tasks[index]);
+            
+            // Only update if they didn't hit cancel and didn't leave it blank
+            if (updatedTask !== null && updatedTask.trim() !== "") {
+                tasks[index] = updatedTask.trim();
+                renderTasks(); // Why: We always call renderTasks() after changing data so the UI perfectly matches the array.
+            }
+        }
+
+        // =========================================================================
+        // LESSON: Advanced Events 
+        // Functions to handle HTML5 drag-and-drop visual states and reordering.
+        // =========================================================================
+        
+        // Why: Fires the moment you start dragging. We save the starting position here.
+        function dragStart() {
+            dragStartIndex = Number(this.dataset.index);
+            this.classList.add('dragging');
+        }
+
+        // Why: Fires when you drag an item OVER another item. We add a visual highlight.
+        function dragEnter(e) {
+            e.preventDefault();
+            this.classList.add('over');
+        }
+
+        // Why: Fires when you drag an item AWAY from another item. Cleans up the highlight.
+        function dragLeave() {
+            this.classList.remove('over');
+        }
+
+        // Why: Browsers block 'drop' events by default. We MUST prevent default behavior to allow dropping.
+        function dragOver(e) {
+            e.preventDefault(); 
+        }
+
+        // Why: The core logic. Calculates where the item started, where it landed, and restructures the array to match.
+        function dragDrop() {
+            var dragEndIndex = Number(this.dataset.index);
+            this.classList.remove('over');
+            
+            // Remove the item from its original spot and insert it at the new spot
+            // Why: Using .splice() twice. First to cut the item out, second to paste it into the new index slot.
+            var itemToMove = tasks.splice(dragStartIndex, 1)[0];
+            tasks.splice(dragEndIndex, 0, itemToMove);
+            
+            renderTasks(); // Redraw the UI with the new array order
+        }
+
+        // Why: Cleanup function. Removes any lingering ghost styling once you let go of the mouse.
+        function dragEnd() {
+            this.classList.remove('dragging');
         }
 
         // Run the initial render block to display default items on page startup
