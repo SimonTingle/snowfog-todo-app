@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!-- DOCTYPE tells browser this is HTML5, the standard modern HTML version -->
+<html>
+<head>
+  <title>Todo App</title>
+  <!-- Title appears in browser tab, helps users know what page they're on -->
+  <link rel="stylesheet" href="styles.css">
+  <!-- Link to CSS file so our styling rules apply to the page -->
+</head>
+<body>
+
+  <h1>My Todo App</h1>
+  <!-- Main heading, large and prominent so users know what this app does -->
+
+  <div id="auth-section">
+    <!-- Container for login and register forms, shown when user is NOT logged in -->
+    <h2>Login</h2>
+    <form id="login-form">
+      <!-- Form for existing users, submits email and password to server -->
+      <input type="email" id="login-email" placeholder="email" required>
+      <!-- type="email" validates that input looks like email, required prevents empty submission -->
+      <input type="password" id="login-password" placeholder="password" required>
+      <!-- type="password" hides characters as user types for security -->
+      <button type="submit">Login</button>
+      <!-- submit button sends form data to server -->
+    </form>
+
+    <h2>Register</h2>
+    <form id="register-form">
+      <!-- Form for new users, creates account with email and password -->
+      <input type="email" id="register-email" placeholder="email" required>
+      <input type="password" id="register-password" placeholder="password" required>
+      <button type="submit">Register</button>
+    </form>
+  </div>
+
+  <div id="todo-section" style="display: none;">
+    <!-- Container for todo app, hidden by default with display:none, shown after login -->
+    <h2>My Todos</h2>
+    <button id="logout-btn">Logout</button>
+    <!-- Logout button lets user exit their session -->
+
+    <form id="todo-form">
+      <!-- Form for adding new todos -->
+      <input type="text" id="todo-input" placeholder="new todo...">
+      <!-- Text input where user types their todo, required to be filled -->
+      <button type="submit">Add</button>
+      <!-- Button to submit and create the todo -->
+    </form>
+
+    <ul id="todo-list"></ul>
+    <!-- Empty list that JavaScript will fill with todo items from server -->
+  </div>
+
+  <script src="app.js"></script>
+  <!-- Link to JavaScript file that handles all user interactions and API calls -->
+</body>
+</html>

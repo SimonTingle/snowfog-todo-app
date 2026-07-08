@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    
+    <title>My Khan Academy Inspired To-Do App</title>
+    
+    <style>
+        /* LESSON: CSS Element Selectors - Sets global font styles and soft background tint for the entire page. */
+        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
+        
+        /* LESSON: CSS Class Selectors - Formats the main content container into a crisp, centered white box with a soft drop shadow. */
+        .container { max-width: 400px; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        
+        /* Strips out the default browser bullet points and layout padding from the unordered task list. */
+        ul { list-style-type: none; padding: 0; }
+        
+        /* Styles individual dynamically added list entries with a prominent blue left border and spacing. */
+        li { padding: 8px; margin-bottom: 5px; background: #eee; border-left: 5px solid #008fcc; display: flex; justify-content: space-between; }
+        
+        /* Simple spacing layout rule to separate the user inputs from the task items below. */
+        .input-section { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+   
+   
+   
+    <div class="container">
+        
+        <h2>My Task Tracker</h2>
+        
+        <div class="input-section">
+            
+            <input type="text" id="taskInput" placeholder="What needs to be done?">
+            
+            <button onclick="addTask()">Add Task</button>
+        </div>
+
+        <ul id="taskList"></ul>
+    </div>
+
+
+    <script>
+        // =========================================================================
+        // LESSON: Intro to Variables
+        // Storing references to HTML elements so we can manipulate them dynamically.
+        // =========================================================================
+        var taskInput = document.getElementById("taskInput");
+        var taskList = document.getElementById("taskList");
+
+        // =========================================================================
+        // LESSON: Intro to Arrays
+        // Khan Academy teaches arrays as list structures to hold multiple data values.
+        // We initialize an empty array to track our string-based tasks.
+        // =========================================================================
+        var tasks = ["Learn Variables", "Study Arrays", "Master Functions"];
+
+        // =========================================================================
+        // LESSON: Functions & Return Values
+        // Creating reusable blocks of code to handle updating the user interface.
+        // =========================================================================
+        function renderTasks() {
+            // Clear out the existing visual list to prevent duplications
+            taskList.innerHTML = "";
+
+            // =====================================================================
+            // LESSON: Looping through Arrays (For Loops)
+            // Using a counter loop to cycle through every task element in our array index.
+            // =====================================================================
+            for (var i = 0; i < tasks.length; i++) {
+                // LESSON: Text and Strings
+                // Extracting string data from our array to display to the user.
+                var currentTaskText = tasks[i];
+
+                // Create a list item element dynamically
+                var listItem = document.createElement("li");
+                listItem.textContent = currentTaskText;
+
+                // Append the built list item to our main task list container
+                taskList.appendChild(listItem);
+            }
+        }
+
+        // =========================================================================
+        // LESSON: Interactive Programs & Logic/If Statements
+        // This function handles user behavior when clicking the "Add Task" button.
+        // =========================================================================
+        function addTask() {
+            var newTaskText = taskInput.value;
+
+            // LESSON: Booleans & If/Else Logic
+            // Check if the input is empty or just spaces before modifying data.
+            if (newTaskText.trim() !== "") {
+                
+                // LESSON: Modifying Arrays
+                // Appending new items to the end of our tracking collection.
+                tasks.push(newTaskText);
+
+                // Clear out the input field for the next entry
+                taskInput.value = "";
+
+                // Refresh the list to reveal the updated array data
+                renderTasks();
+            } else {
+                // Fallback logical condition alert if user attempts to submit blank text
+                alert("Please enter a valid task description!");
+            }
+        }
+
+        // Run the initial render block to display default items on page startup
+        renderTasks();
+
+    </script>
+</body>
+</html>

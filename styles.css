@@ -1,0 +1,53 @@
+body {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 20px;
+  background-color: #f5f5f5;
+}
+/* Arial is a safe, readable font available on all systems. max-width keeps content readable, margin auto centers it, padding gives breathing room, light gray background reduces eye strain */
+
+h1 {
+  color: #333;
+}
+/* Dark gray is easier to read than black while still being high contrast */
+
+h2 {
+  color: #555;
+  margin-top: 20px;
+}
+/* Slightly lighter than h1 to create visual hierarchy, top margin separates sections */
+
+input {
+  padding: 6px;
+  margin: 4px 0;
+  width: 200px;
+}
+/* Padding makes inputs easier to interact with, fixed width ensures consistency, margin provides spacing between form fields */
+
+button {
+  padding: 6px 12px;
+  margin: 4px;
+  cursor: pointer;
+}
+/* Padding makes buttons larger and easier to click, cursor:pointer gives visual feedback that it's clickable */
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+/* Removing bullets creates a cleaner look, zero padding prevents extra indentation */
+
+li {
+  background: white;
+  padding: 8px;
+  margin: 4px 0;
+  border: 1px solid #ccc;
+}
+/* White background makes each todo stand out, padding provides breathing room inside the box, border creates clear separation between items */
+
+li.done {
+  text-decoration: line-through;
+  color: #999;
+}
+/* Strikethrough visually shows completion, gray color de-emphasizes completed items */
