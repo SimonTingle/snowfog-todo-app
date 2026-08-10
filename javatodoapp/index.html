@@ -59,6 +59,18 @@
 
 
     <script>
+                // Check if user is logged in when javatodoapp loads
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+        // If not logged in, boot them back to the root login page
+        window.location.href = '../index.html';
+        }
+
+                // Optional Logout function to add to your app
+        function logout() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userEmail');
+        window.location.href = '../index.html';
+        }
         // =========================================================================
         // LESSON: Intro to Variables
         // Storing references to HTML elements so we can manipulate them dynamically.
