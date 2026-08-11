@@ -9,7 +9,7 @@
         body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
         
         /* LESSON: CSS Class Selectors - Formats the main content container into a crisp, centered white box with a soft drop shadow. */
-        .container { max-width: 400px; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .container { max-width: 400px; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin: 0 auto; }
         
         /* Strips out the default browser bullet points and layout padding from the unordered task list. */
         ul { list-style-type: none; padding: 0; }
@@ -24,6 +24,7 @@
             justify-content: space-between; /* Why: Pushes task text to the left and action buttons to the right for a cleaner layout. */
             align-items: center; /* Why: Keeps text and buttons vertically centered with each other. */
             cursor: grab; /* Why: Visual cue (hand icon) telling the user this item can be picked up and dragged. */
+            transition: background-color 0.2s ease;
         }
 
         li:active {
@@ -39,42 +40,36 @@
         li.dragging { opacity: 0.5; } /* Why: Lowers visibility of the original item so the user knows exactly which item they are moving. */
         
         li.over { background-color: #d0ebff; border-style: dashed; } /* Why: Highlights the target drop zone so the user knows where the item will land. */
+
+        /* TASK COMPLETION STYLES */
+        .completed {
+            text-decoration: line-through;
+            color: #888;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-    <!-- Add Logout Button at the top - Users can log in and log out -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <span id="userGreeting" style="font-size: 0.9em; color: #555;"></span>
-        <button onclick="logout()" style="background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Logout</button>
-    </div>
+        <!-- Add Logout Button at the top - Users can log in and log out -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <span id="userGreeting" style="font-size: 0.9em; color: #555;"></span>
+            <button onclick="logout()" style="background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Logout</button>
+        </div>
 
-    <h2>My Task Tracker</h2>
-
-    <div class="container">
-        
         <h2>My Task Tracker</h2>
         
         <div class="input-section">
-            
             <input type="text" id="taskInput" placeholder="What needs to be done?">
-            
             <button onclick="addTask()">Add Task</button>
         </div>
 
         <ul id="taskList"></ul>
     </div>
 
-
-    <ul id="taskList"></ul>
-</div>
-
-
 <script>
     // =========================================================================
-    // LESSON: Booleans & If Statements / Browser Storage (New Concept)
+    // LESSON: Booleans & If Statements / Browser Storage
     // 1. ROUTE GUARD & USER SESSION
-    // Khan Academy: "If statements" evaluate truthy/falsy conditions.
     // check if the user is authenticated; if false, redirect to login.
     // =========================================================================
     var currentUser = localStorage.getItem('userEmail');
@@ -86,7 +81,7 @@
     // Safely update greeting if element exists
     var greetingElem = document.getElementById('userGreeting');
     if (greetingElem) {
-        greetingElem.textContent = currentUser;
+        greetingElem.textContent = "Logged in as: " + currentUser;
     }
 
     // =========================================================================
@@ -102,18 +97,11 @@
     // =========================================================================
     // LESSON: Intro to Strings & Objects/JSON
     // 2. PER-USER DATA STORAGE
-    // String concatenation creates a unique key per user (e.g., "todos_user@test.com").
-    // JSON.parse converts stored string data back into a JavaScript array.
-    // =========================================================================
-    // =========================================================================
-    // LESSON: Intro to Strings & Objects/JSON
-    // 2. PER-USER DATA STORAGE
-    // Instead of simple strings, we now store objects: { text: "...", completed: false }
+    // Store objects: { text: "...", completed: false }
     // =========================================================================
     var storageKey = 'todos_' + currentUser;
     var savedTasks = localStorage.getItem(storageKey);
 
-    // 👇 THIS IS WHERE THE NEW ARRAY STRUCTURE LIVES 👇
     var tasks = savedTasks ? JSON.parse(savedTasks) : [
         { text: "Learn Variables", completed: false },
         { text: "Study Arrays", completed: true },
@@ -136,7 +124,7 @@
         taskList.innerHTML = "";
 
         for (var i = 0; i < tasks.length; i++) {
-            var currentTask = tasks[i]; // currentTask is now an OBJECT, e.g. { text: "...", completed: false }
+            var currentTask = tasks[i];
 
             var listItem = document.createElement("li");
             listItem.draggable = true;
@@ -152,7 +140,7 @@
 
             // Text span
             var textSpan = document.createElement("span");
-            textSpan.textContent = currentTask.text; // Accessing the .text property of the object
+            textSpan.textContent = currentTask.text;
             
             // Apply line-through class if task is completed
             if (currentTask.completed) {
@@ -198,9 +186,11 @@
         }
     }
 
+    // Initialize list view
+    renderTasks();
+
     // =========================================================================
-    // NEW FUNCTION: TOGGLE COMPLETE STATUS
-    // Switches task.completed between true and false
+    // TOGGLE COMPLETE STATUS
     // =========================================================================
     function toggleComplete(index) {
         tasks[index].completed = !tasks[index].completed;
@@ -209,12 +199,11 @@
     }
 
     // =========================================================================
-    // UPDATED TASK HANDLERS (Adjusted for Objects)
+    // TASK HANDLERS
     // =========================================================================
     function addTask() {
         var newTaskText = taskInput.value;
         if (newTaskText.trim() !== "") {
-            // Push an OBJECT with text and completed: false
             tasks.push({ text: newTaskText.trim(), completed: false });
             taskInput.value = "";
             saveTasksToStorage();
@@ -235,6 +224,45 @@
 
     function deleteTask(index) {
         tasks.splice(index, 1);
+        saveTasksToStorage();
+        renderTasks();
+    }
+
+    // =========================================================================
+    // DRAG AND DROP HANDLERS (RESTORED)
+    // =========================================================================
+    function dragStart(e) {
+        dragStartIndex = +this.dataset.index;
+        this.classList.add('dragging');
+    }
+
+    function dragOver(e) {
+        e.preventDefault(); // Required to allow drop
+    }
+
+    function dragEnter() {
+        this.classList.add('over');
+    }
+
+    function dragLeave() {
+        this.classList.remove('over');
+    }
+
+    function dragDrop() {
+        var dragEndIndex = +this.dataset.index;
+        swapItems(dragStartIndex, dragEndIndex);
+        this.classList.remove('over');
+    }
+
+    function dragEnd() {
+        this.classList.remove('dragging');
+    }
+
+    function swapItems(fromIndex, toIndex) {
+        var temp = tasks[fromIndex];
+        tasks[fromIndex] = tasks[toIndex];
+        tasks[toIndex] = temp;
+        
         saveTasksToStorage();
         renderTasks();
     }
