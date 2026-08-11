@@ -105,42 +105,70 @@
     // String concatenation creates a unique key per user (e.g., "todos_user@test.com").
     // JSON.parse converts stored string data back into a JavaScript array.
     // =========================================================================
+    // =========================================================================
+    // LESSON: Intro to Strings & Objects/JSON
+    // 2. PER-USER DATA STORAGE
+    // Instead of simple strings, we now store objects: { text: "...", completed: false }
+    // =========================================================================
     var storageKey = 'todos_' + currentUser;
     var savedTasks = localStorage.getItem(storageKey);
-    var tasks = savedTasks ? JSON.parse(savedTasks) : ["Learn Variables", "Study Arrays", "Master Functions"];
 
-    // Helper function to serialize array into string and write to browser storage
+    // 👇 THIS IS WHERE THE NEW ARRAY STRUCTURE LIVES 👇
+    var tasks = savedTasks ? JSON.parse(savedTasks) : [
+        { text: "Learn Variables", completed: false },
+        { text: "Study Arrays", completed: true },
+        { text: "Master Functions", completed: false }
+    ];
+
     function saveTasksToStorage() {
         localStorage.setItem(storageKey, JSON.stringify(tasks));
     }
 
-    // =========================================================================
-    // LESSON: Intro to Variables & DOM Elements
-    // Storing references to HTML input and list elements.
-    // =========================================================================
     var taskInput = document.getElementById("taskInput");
     var taskList = document.getElementById("taskList");
     var dragStartIndex;
 
     // =========================================================================
-    // LESSON: Functions & Return Values
-    // Reusable block to clear existing UI and build list items from array.
+    // LESSON: Objects & Accessing Properties
+    // RENDER TASKS WITH CHECKBOX & COMPLETION TOGGLE
     // =========================================================================
     function renderTasks() {
         taskList.innerHTML = "";
 
-        // LESSON: Looping through Arrays (For Loops)
         for (var i = 0; i < tasks.length; i++) {
-            var currentTaskText = tasks[i];
+            var currentTask = tasks[i]; // currentTask is now an OBJECT, e.g. { text: "...", completed: false }
 
             var listItem = document.createElement("li");
             listItem.draggable = true;
             listItem.dataset.index = i;
 
-            var textSpan = document.createElement("span");
-            textSpan.textContent = currentTaskText;
-            listItem.appendChild(textSpan);
+            // Checkbox for completed status
+            var checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = currentTask.completed;
+            checkbox.dataset.index = i;
+            checkbox.style.marginRight = "10px";
+            checkbox.onchange = function() { toggleComplete(this.dataset.index); };
 
+            // Text span
+            var textSpan = document.createElement("span");
+            textSpan.textContent = currentTask.text; // Accessing the .text property of the object
+            
+            // Apply line-through class if task is completed
+            if (currentTask.completed) {
+                textSpan.classList.add("completed");
+            }
+
+            // Left container holding checkbox + text
+            var contentDiv = document.createElement("div");
+            contentDiv.style.display = "flex";
+            contentDiv.style.alignItems = "center";
+            contentDiv.appendChild(checkbox);
+            contentDiv.appendChild(textSpan);
+
+            listItem.appendChild(contentDiv);
+
+            // Action buttons container
             var actionsDiv = document.createElement("div");
             actionsDiv.className = "actions";
 
@@ -171,75 +199,45 @@
     }
 
     // =========================================================================
-    // LESSON: Interactive Programs & Modifying Arrays
-    // 3. UPDATED TASK HANDLERS (Saves changes to user's storage)
-    // Functions that alter array data, save changes to storage, and refresh UI.
+    // NEW FUNCTION: TOGGLE COMPLETE STATUS
+    // Switches task.completed between true and false
+    // =========================================================================
+    function toggleComplete(index) {
+        tasks[index].completed = !tasks[index].completed;
+        saveTasksToStorage();
+        renderTasks();
+    }
+
+    // =========================================================================
+    // UPDATED TASK HANDLERS (Adjusted for Objects)
     // =========================================================================
     function addTask() {
         var newTaskText = taskInput.value;
         if (newTaskText.trim() !== "") {
-            tasks.push(newTaskText);
+            // Push an OBJECT with text and completed: false
+            tasks.push({ text: newTaskText.trim(), completed: false });
             taskInput.value = "";
-            saveTasksToStorage(); // Save to user's storage
+            saveTasksToStorage();
             renderTasks();
         } else {
             alert("Please enter a valid task description!");
         }
     }
 
-    // LESSON: Array Splice & Updates
-    function deleteTask(index) {
-        tasks.splice(index, 1);
-        saveTasksToStorage(); // Save to user's storage
-        renderTasks();
-    }
-
     function editTask(index) {
-        var updatedTask = prompt("Update your task:", tasks[index]);
-        if (updatedTask !== null && updatedTask.trim() !== "") {
-            tasks[index] = updatedTask.trim();
-            saveTasksToStorage(); // Save to user's storage
+        var updatedTaskText = prompt("Update your task:", tasks[index].text);
+        if (updatedTaskText !== null && updatedTaskText.trim() !== "") {
+            tasks[index].text = updatedTaskText.trim();
+            saveTasksToStorage();
             renderTasks();
         }
     }
 
-    function dragDrop() {
-        var dragEndIndex = Number(this.dataset.index);
-        this.classList.remove('over');
-        var itemToMove = tasks.splice(dragStartIndex, 1)[0];
-        tasks.splice(dragEndIndex, 0, itemToMove);
-        saveTasksToStorage(); // Save to user's storage
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+        saveTasksToStorage();
         renderTasks();
     }
-
-    // =========================================================================
-    // LESSON: Advanced Events 
-    // Functions to handle HTML5 drag-and-drop visual states and reordering.
-    // =========================================================================
-    function dragStart() {
-        dragStartIndex = Number(this.dataset.index);
-        this.classList.add('dragging');
-    }
-
-    function dragEnter(e) {
-        e.preventDefault();
-        this.classList.add('over');
-    }
-
-    function dragLeave() {
-        this.classList.remove('over');
-    }
-
-    function dragOver(e) {
-        e.preventDefault(); 
-    }
-
-    function dragEnd() {
-        this.classList.remove('dragging');
-    }
-
-    // Run initial render on startup
-    renderTasks();
 </script>
 </body>
 </html>

@@ -1,53 +1,113 @@
+/* =========================================================================
+   LESSON: Global Base Styles
+   Sets base typography, layout boundaries, and soft background color.
+   ========================================================================= */
 body {
-  font-family: Arial, sans-serif;
-  max-width: 600px;
-  margin: 40px auto;
+  font-family: Arial, sans-serif; /* Safe, system-agnostic font */
+  max-width: 600px;              /* Keeps container focused and readable */
+  margin: 40px auto;             /* Auto-centers layout vertically & horizontally */
   padding: 0 20px;
-  background-color: #f5f5f5;
+  background-color: #f5f5f5;     /* Soft background reduces eye strain */
 }
-/* Arial is a safe, readable font available on all systems. max-width keeps content readable, margin auto centers it, padding gives breathing room, light gray background reduces eye strain */
 
+/* =========================================================================
+   LESSON: Headings & Visual Hierarchy
+   Contrasting colors establish focal points across page headers.
+   ========================================================================= */
 h1 {
-  color: #333;
+  color: #333; /* Dark gray for prominent high-contrast titles */
 }
-/* Dark gray is easier to read than black while still being high contrast */
 
 h2 {
-  color: #555;
-  margin-top: 20px;
+  color: #555;        /* Slightly lighter gray for subheadings */
+  margin-top: 20px;   /* Creates visual breathing room between sections */
 }
-/* Slightly lighter than h1 to create visual hierarchy, top margin separates sections */
 
-input {
-  padding: 6px;
+/* =========================================================================
+   LESSON: Form Inputs & Controls
+   Styles interactive input fields for consistent width and usability.
+   ========================================================================= */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  padding: 8px;
   margin: 4px 0;
-  width: 200px;
+  width: 220px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensures padding doesn't push width wider */
 }
-/* Padding makes inputs easier to interact with, fixed width ensures consistency, margin provides spacing between form fields */
 
 button {
-  padding: 6px 12px;
+  padding: 8px 14px;
   margin: 4px;
-  cursor: pointer;
+  cursor: pointer;        /* Visual hand cursor cue on hover */
+  border: 1px solid #008fcc;
+  background-color: #008fcc;
+  color: white;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
-/* Padding makes buttons larger and easier to click, cursor:pointer gives visual feedback that it's clickable */
 
+button:hover {
+  background-color: #0073a6; /* Darkens button color on hover for tactile feel */
+}
+
+/* =========================================================================
+   LESSON: Unordered Lists & Reset
+   Strips default browser bullet points and indentations.
+   ========================================================================= */
 ul {
   list-style: none;
   padding: 0;
 }
-/* Removing bullets creates a cleaner look, zero padding prevents extra indentation */
 
+/* =========================================================================
+   LESSON: Flexbox & Task Items
+   Formats individual task entries into crisp cards using Flexbox layout.
+   ========================================================================= */
 li {
   background: white;
-  padding: 8px;
-  margin: 4px 0;
+  padding: 10px 12px;
+  margin: 6px 0;
   border: 1px solid #ccc;
+  border-left: 5px solid #008fcc; /* Accent left border for visual weight */
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between; /* Pushes content left, buttons right */
+  align-items: center;          /* Centers text and buttons vertically */
+  cursor: grab;                 /* Cursor cue indicating drag-and-drop capability */
 }
-/* White background makes each todo stand out, padding provides breathing room inside the box, border creates clear separation between items */
 
+li:active {
+  cursor: grabbing; /* Tactile feedback while holding mouse click */
+}
+
+/* =========================================================================
+   LESSON: Task Completion & State Styles
+   Handles strike-through and de-emphasis for completed tasks.
+   Matches JavaScript class: textSpan.classList.add("completed")
+   ========================================================================= */
+.completed,
 li.done {
   text-decoration: line-through;
-  color: #999;
+  color: #888; /* Fades finished task text */
+  transition: all 0.2s ease;
 }
-/* Strikethrough visually shows completion, gray color de-emphasizes completed items */
+
+/* Checkbox styling inside list items */
+li input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Drag and Drop visual state helpers */
+li.dragging {
+  opacity: 0.5; /* Dims original element while dragging */
+}
+
+li.over {
+  background-color: #d0ebff; /* Visual highlight for drop target zone */
+  border-style: dashed;
+}
