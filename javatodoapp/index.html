@@ -1,124 +1,247 @@
 <!DOCTYPE html>
+<!-- html language attribute docs: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/lang -->
 <html lang="en">
 <head>
+    <!-- document character encoding: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/meta#charset -->
     <meta charset="UTF-8">
-    <title>My Khan Academy Inspired To-Do App</title>
+    <!-- viewport settings for mobile responsiveness: https://developer.mozilla.org/en-US/docs/Web/HTML/Viewport_meta_tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snowfog Todo - Task Tracker</title>
     
     <style>
-        /* LESSON: CSS Element Selectors - Sets global font styles and soft background tint for the entire page. */
-        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
+        /* LESSON: CSS Element Selectors - Global font styles and page background */
+        /* css body element docs: https://developer.mozilla.org/en-US/docs/Web/CSS/body */
+        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; margin: 0; }
         
-        /* LESSON: CSS Class Selectors - Formats the main content container into a crisp, centered white box with a soft drop shadow. */
-        .container { max-width: 400px; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin: 0 auto; }
+        /* LESSON: CSS Class Selectors - Center container box with drop shadow */
+        /* css box-shadow docs: https://developer.mozilla.org/en-US/docs/Web/CSS/box-shadow */
+        .container { max-width: 420px; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin: 30px auto; }
         
-        /* Strips out the default browser bullet points and layout padding from the unordered task list. */
-        ul { list-style-type: none; padding: 0; }
+        /* Removes default list bullet points and padding */
+        /* css list-style-type docs: https://developer.mozilla.org/en-US/docs/Web/CSS/list-style-type */
+        ul { list-style-type: none; padding: 0; margin: 0; }
         
-        /* Styles individual dynamically added list entries with a prominent blue left border and spacing. */
+        /* Styles task list items with flexbox alignment and visual affordances */
+        /* css flexbox layout docs: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Flexible_Box_Layout */
         li { 
-            padding: 8px; 
-            margin-bottom: 5px; 
+            padding: 10px; 
+            margin-bottom: 8px; 
             background: #eee; 
             border-left: 5px solid #008fcc; 
             display: flex; 
-            justify-content: space-between; /* Why: Pushes task text to the left and action buttons to the right for a cleaner layout. */
-            align-items: center; /* Why: Keeps text and buttons vertically centered with each other. */
-            cursor: grab; /* Why: Visual cue (hand icon) telling the user this item can be picked up and dragged. */
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: grab; 
             transition: background-color 0.2s ease;
+            border-radius: 3px;
         }
 
+        /* css cursor grabbing state docs: https://developer.mozilla.org/en-US/docs/Web/CSS/cursor */
         li:active {
-            cursor: grabbing; /* Why: Gives immediate tactile feedback that the item is currently being held. */
+            cursor: grabbing;
         }
         
-        /* Simple spacing layout rule to separate the user inputs from the task items below. */
-        .input-section { margin-bottom: 20px; }
+        /* Form container spacing rules */
+        .input-section { margin-bottom: 20px; display: flex; gap: 8px; }
+        .input-section input[type="text"], 
+        .input-section input[type="email"], 
+        .input-section input[type="password"] { 
+            flex-grow: 1; 
+            padding: 8px; 
+            border: 1px solid #ccc; 
+            border-radius: 3px; 
+        }
 
-        /* Styles for the new action buttons and drag-and-drop visual states */
-        .actions button { margin-left: 5px; cursor: pointer; } /* Why: Adds breathing room between Edit/Delete buttons. */
+        /* Action buttons styling */
+        button { cursor: pointer; padding: 6px 12px; background: #008fcc; color: white; border: none; border-radius: 3px; }
+        button:hover { background: #0077aa; }
+        .actions button { margin-left: 4px; padding: 4px 8px; font-size: 0.85em; }
+        .actions button.delete-btn { background: #ff4d4d; }
+        .actions button.delete-btn:hover { background: #e60000; }
         
-        li.dragging { opacity: 0.5; } /* Why: Lowers visibility of the original item so the user knows exactly which item they are moving. */
-        
-        li.over { background-color: #d0ebff; border-style: dashed; } /* Why: Highlights the target drop zone so the user knows where the item will land. */
+        /* Drag-and-drop feedback classes */
+        /* css opacity docs: https://developer.mozilla.org/en-US/docs/Web/CSS/opacity */
+        li.dragging { opacity: 0.5; } 
+        li.over { background-color: #d0ebff; border-style: dashed; }
 
-        /* TASK COMPLETION STYLES */
+        /* Task completion text styling */
+        /* css text-decoration docs: https://developer.mozilla.org/en-US/docs/Web/CSS/text-decoration */
         .completed {
             text-decoration: line-through;
             color: #888;
         }
+
+        /* Utility display classes */
+        /* css display property docs: https://developer.mozilla.org/en-US/docs/Web/CSS/display */
+        .hidden { display: none !important; }
+        .toggle-text { margin-top: 12px; font-size: 0.85em; text-align: center; }
+        .toggle-text button { background: none; color: #008fcc; border: none; padding: 0; text-decoration: underline; }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Add Logout Button at the top - Users can log in and log out -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <!-- User Session Bar -->
+        <!-- css flexbox alignment docs: https://developer.mozilla.org/en-US/docs/Web/CSS/align-items -->
+        <div id="userBar" class="hidden" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <span id="userGreeting" style="font-size: 0.9em; color: #555;"></span>
-            <button onclick="logout()" style="background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Logout</button>
+            <button id="logoutBtn" style="background: #ff4d4d;">Logout</button>
         </div>
 
-        <h2>My Task Tracker</h2>
-        
-        <div class="input-section">
-            <input type="text" id="taskInput" placeholder="What needs to be done?">
-            <button onclick="addTask()">Add Task</button>
+        <!-- AUTHENTICATION FORM VIEW -->
+        <!-- html form element docs: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form -->
+        <div id="authSection">
+            <h2 id="authTitle" style="margin-top:0;">Login</h2>
+            <form id="authForm">
+                <div class="input-section" style="flex-direction: column;">
+                    <input type="email" id="email" placeholder="Email address" required>
+                    <input type="password" id="password" placeholder="Password (min 6 chars)" required minlength="6">
+                    <button type="submit" id="authSubmit">Login</button>
+                </div>
+            </form>
+            <p class="toggle-text">
+                <span id="toggleMsg">Don't have an account?</span>
+                <button type="button" id="toggleAuthBtn">Register</button>
+            </p>
         </div>
 
-        <ul id="taskList"></ul>
+        <!-- TODO DASHBOARD VIEW -->
+        <div id="todoSection" class="hidden">
+            <h2 style="margin-top:0;">My Task Tracker</h2>
+            
+            <form id="addTaskForm" class="input-section">
+                <input type="text" id="taskInput" placeholder="What needs to be done?" required>
+                <button type="submit">Add Task</button>
+            </form>
+
+            <!-- Unordered list element container for tasks -->
+            <!-- html list element docs: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ul -->
+            <ul id="taskList"></ul>
+        </div>
     </div>
 
 <script>
     // =========================================================================
-    // LESSON: Booleans & If Statements / Browser Storage
-    // 1. ROUTE GUARD & USER SESSION
-    // check if the user is authenticated; if false, redirect to login.
+    // STATE & DOM SELECTORS
     // =========================================================================
-    var currentUser = localStorage.getItem('userEmail');
+    let currentUser = null;
+    let isRegisterMode = false;
+    let tasks = [];
+    let dragStartIndex;
 
-    if (localStorage.getItem('isLoggedIn') !== 'true' || !currentUser) {
-        window.location.href = '../index.html';
+    // getElementById docs: https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
+    const userBar = document.getElementById('userBar');
+    const userGreeting = document.getElementById('userGreeting');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const authSection = document.getElementById('authSection');
+    const todoSection = document.getElementById('todoSection');
+    const authForm = document.getElementById('authForm');
+    const authTitle = document.getElementById('authTitle');
+    const authSubmit = document.getElementById('authSubmit');
+    const toggleMsg = document.getElementById('toggleMsg');
+    const toggleAuthBtn = document.getElementById('toggleAuthBtn');
+    const addTaskForm = document.getElementById('addTaskForm');
+    const taskInput = document.getElementById('taskInput');
+    const taskList = document.getElementById('taskList');
+
+    // =========================================================================
+    // HTTP API CLIENT (Replaces LocalStorage with PostgreSQL Backed Endpoints)
+    // fetch API docs: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+    // =========================================================================
+    async function apiFetch(endpoint, options = {}) {
+        const res = await fetch(endpoint, {
+            headers: { 'Content-Type': 'application/json' },
+            ...options
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Request failed');
+        return data;
     }
 
-    // Safely update greeting if element exists
-    var greetingElem = document.getElementById('userGreeting');
-    if (greetingElem) {
-        greetingElem.textContent = "Logged in as: " + currentUser;
+    // Check user cookie session status on startup
+    async function checkAuth() {
+        try {
+            const data = await apiFetch('/api/auth/me');
+            currentUser = data.user;
+            renderUI();
+            fetchTasks();
+        } catch (err) {
+            currentUser = null;
+            renderUI();
+        }
+    }
+
+    // Toggle authentication and dashboard view layouts
+    // classList API docs: https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+    function renderUI() {
+        if (currentUser) {
+            authSection.classList.add('hidden');
+            todoSection.classList.remove('hidden');
+            userBar.classList.remove('hidden');
+            userGreeting.textContent = "Logged in as: " + currentUser.email;
+        } else {
+            authSection.classList.remove('hidden');
+            todoSection.classList.add('hidden');
+            userBar.classList.add('hidden');
+        }
+    }
+
+    // Toggle Login vs Registration Mode
+    toggleAuthBtn.addEventListener('click', () => {
+        isRegisterMode = !isRegisterMode;
+        authTitle.textContent = isRegisterMode ? 'Register' : 'Login';
+        authSubmit.textContent = isRegisterMode ? 'Register' : 'Login';
+        toggleMsg.textContent = isRegisterMode ? 'Already have an account?' : "Don't have an account?";
+        toggleAuthBtn.textContent = isRegisterMode ? 'Login' : 'Register';
+    });
+
+    // Authenticate user via HTTP API
+    // preventDefault docs: https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault
+    authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const endpoint = isRegisterMode ? '/api/auth/register' : '/api/auth/login';
+
+        try {
+            const data = await apiFetch(endpoint, {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+            currentUser = data.user;
+            renderUI();
+            fetchTasks();
+        } catch (err) {
+            alert(err.message);
+        }
+    });
+
+    // Destroy session and log out
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await apiFetch('/api/auth/logout', { method: 'POST' });
+            currentUser = null;
+            tasks = [];
+            taskList.innerHTML = '';
+            renderUI();
+        } catch (err) {
+            alert('Logout failed');
+        }
+    });
+
+    // Fetch user task records from PostgreSQL backend
+    async function fetchTasks() {
+        try {
+            const data = await apiFetch('/api/todos');
+            tasks = data.todos;
+            renderTasks();
+        } catch (err) {
+            console.error('Failed to fetch tasks:', err);
+        }
     }
 
     // =========================================================================
-    // LESSON: Functions
-    // Function to clear user session and return to root login page.
-    // =========================================================================
-    function logout() {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('userEmail');
-        window.location.href = '../index.html';
-    }
-
-    // =========================================================================
-    // LESSON: Intro to Strings & Objects/JSON
-    // 2. PER-USER DATA STORAGE
-    // Store objects: { text: "...", completed: false }
-    // =========================================================================
-    var storageKey = 'todos_' + currentUser;
-    var savedTasks = localStorage.getItem(storageKey);
-
-    var tasks = savedTasks ? JSON.parse(savedTasks) : [
-        { text: "Learn Variables", completed: false },
-        { text: "Study Arrays", completed: true },
-        { text: "Master Functions", completed: false }
-    ];
-
-    function saveTasksToStorage() {
-        localStorage.setItem(storageKey, JSON.stringify(tasks));
-    }
-
-    var taskInput = document.getElementById("taskInput");
-    var taskList = document.getElementById("taskList");
-    var dragStartIndex;
-
-    // =========================================================================
-    // LESSON: Objects & Accessing Properties
-    // RENDER TASKS WITH CHECKBOX & COMPLETION TOGGLE
+    // RENDER TASKS WITH CHECKBOX, EDIT, DELETE & DRAG-AND-DROP
+    // createElement docs: https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
     // =========================================================================
     function renderTasks() {
         taskList.innerHTML = "";
@@ -129,25 +252,25 @@
             var listItem = document.createElement("li");
             listItem.draggable = true;
             listItem.dataset.index = i;
+            listItem.dataset.id = currentTask.id;
 
-            // Checkbox for completed status
+            // Checkbox for task completion state
             var checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.checked = currentTask.completed;
-            checkbox.dataset.index = i;
+            checkbox.dataset.id = currentTask.id;
             checkbox.style.marginRight = "10px";
-            checkbox.onchange = function() { toggleComplete(this.dataset.index); };
+            checkbox.onchange = function() { toggleComplete(this.dataset.id, this.checked); };
 
-            // Text span
+            // Text span with XSS sanitization
             var textSpan = document.createElement("span");
-            textSpan.textContent = currentTask.text;
+            textSpan.textContent = currentTask.title;
             
-            // Apply line-through class if task is completed
             if (currentTask.completed) {
                 textSpan.classList.add("completed");
             }
 
-            // Left container holding checkbox + text
+            // Left flex container
             var contentDiv = document.createElement("div");
             contentDiv.style.display = "flex";
             contentDiv.style.alignItems = "center";
@@ -162,19 +285,22 @@
 
             var editBtn = document.createElement("button");
             editBtn.textContent = "Edit";
-            editBtn.dataset.index = i;
-            editBtn.onclick = function() { editTask(this.dataset.index); };
+            editBtn.dataset.id = currentTask.id;
+            editBtn.dataset.title = currentTask.title;
+            editBtn.onclick = function() { editTask(this.dataset.id, this.dataset.title); };
 
             var deleteBtn = document.createElement("button");
             deleteBtn.textContent = "Delete";
-            deleteBtn.dataset.index = i;
-            deleteBtn.onclick = function() { deleteTask(this.dataset.index); };
+            deleteBtn.className = "delete-btn";
+            deleteBtn.dataset.id = currentTask.id;
+            deleteBtn.onclick = function() { deleteTask(this.dataset.id); };
 
             actionsDiv.appendChild(editBtn);
             actionsDiv.appendChild(deleteBtn);
             listItem.appendChild(actionsDiv);
 
-            // Attach drag events
+            // Attach Drag & Drop Listeners
+            // HTML5 Drag and Drop API docs: https://developer.mozilla.org/en-US/docs/Web/API/HTML_Drag_and_Drop_API
             listItem.addEventListener('dragstart', dragStart);
             listItem.addEventListener('dragover', dragOver);
             listItem.addEventListener('drop', dragDrop);
@@ -186,58 +312,72 @@
         }
     }
 
-    // Initialize list view
-    renderTasks();
+    // =========================================================================
+    // TASK ACTION HANDLERS (POST, PATCH, DELETE)
+    // =========================================================================
+    addTaskForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = taskInput.value.trim();
+        if (!title) return;
 
-    // =========================================================================
-    // TOGGLE COMPLETE STATUS
-    // =========================================================================
-    function toggleComplete(index) {
-        tasks[index].completed = !tasks[index].completed;
-        saveTasksToStorage();
-        renderTasks();
-    }
-
-    // =========================================================================
-    // TASK HANDLERS
-    // =========================================================================
-    function addTask() {
-        var newTaskText = taskInput.value;
-        if (newTaskText.trim() !== "") {
-            tasks.push({ text: newTaskText.trim(), completed: false });
+        try {
+            await apiFetch('/api/todos', {
+                method: 'POST',
+                body: JSON.stringify({ title })
+            });
             taskInput.value = "";
-            saveTasksToStorage();
-            renderTasks();
-        } else {
-            alert("Please enter a valid task description!");
+            fetchTasks();
+        } catch (err) {
+            alert(err.message);
+        }
+    });
+
+    async function toggleComplete(id, completed) {
+        try {
+            await apiFetch(`/api/todos/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ completed })
+            });
+            fetchTasks();
+        } catch (err) {
+            alert(err.message);
         }
     }
 
-    function editTask(index) {
-        var updatedTaskText = prompt("Update your task:", tasks[index].text);
-        if (updatedTaskText !== null && updatedTaskText.trim() !== "") {
-            tasks[index].text = updatedTaskText.trim();
-            saveTasksToStorage();
-            renderTasks();
+    async function editTask(id, currentTitle) {
+        var updatedTitle = prompt("Update your task:", currentTitle);
+        if (updatedTitle !== null && updatedTitle.trim() !== "") {
+            try {
+                await apiFetch(`/api/todos/${id}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ title: updatedTitle.trim() })
+                });
+                fetchTasks();
+            } catch (err) {
+                alert(err.message);
+            }
         }
     }
 
-    function deleteTask(index) {
-        tasks.splice(index, 1);
-        saveTasksToStorage();
-        renderTasks();
+    async function deleteTask(id) {
+        try {
+            await apiFetch(`/api/todos/${id}`, { method: 'DELETE' });
+            fetchTasks();
+        } catch (err) {
+            alert(err.message);
+        }
     }
 
     // =========================================================================
-    // DRAG AND DROP HANDLERS (RESTORED)
+    // DRAG AND DROP HANDLERS
     // =========================================================================
-    function dragStart(e) {
+    function dragStart() {
         dragStartIndex = +this.dataset.index;
         this.classList.add('dragging');
     }
 
     function dragOver(e) {
-        e.preventDefault(); // Required to allow drop
+        e.preventDefault(); // Required to enable dropping
     }
 
     function dragEnter() {
@@ -262,10 +402,11 @@
         var temp = tasks[fromIndex];
         tasks[fromIndex] = tasks[toIndex];
         tasks[toIndex] = temp;
-        
-        saveTasksToStorage();
         renderTasks();
     }
+
+    // Initialize session state check
+    checkAuth();
 </script>
 </body>
 </html>

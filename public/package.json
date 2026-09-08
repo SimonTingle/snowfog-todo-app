@@ -1,0 +1,16 @@
+{
+  "name": "snowfog-todo-app",
+  "version": "1.0.0",
+  "description": "Vanilla JavaScript and Node.js HTTP router Todo application with PostgreSQL",
+  "main": "server.js",
+  "scripts": {
+    // npm scripts reference: https://docs.npmjs.com/cli/v10/using-npm/scripts
+    "start": "node server.js",
+    // node watch mode docs: https://nodejs.org/api/cli.html#--watch
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    // node-postgres package npm page: https://www.npmjs.com/package/pg
+    "pg": "^8.11.3"
+  }
+}
