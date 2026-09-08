@@ -1,14 +1,23 @@
-# Use lightweight official Nginx image
-FROM nginx:alpine
+# Use lightweight official Node.js image
+FROM node:20-alpine
 
-# Remove default Nginx website
-RUN rm -rf /usr/share/nginx/html/*
+# Set working directory inside container
+WORKDIR /usr/src/app
 
-# Copy your website files into Nginx web root
-COPY . /usr/share/nginx/html
+# Copy package manifests first to leverage Docker layer caching
+COPY package*.json ./
 
-# Expose port 80 (CapRover expects this)
-EXPOSE 80
+# Install production dependencies
+RUN npm ci --only=production
 
-# Start Nginx in foreground
-CMD ["nginx", "-g", "daemon off;"]
+# Copy application files (including public/ folder and backend files)
+COPY . .
+
+# Expose port 3000 for CapRover routing
+EXPOSE 3000
+
+ENV PORT=3000
+ENV NODE_ENV=production
+
+# Start your Node.js server
+CMD ["node", "server.js"]
