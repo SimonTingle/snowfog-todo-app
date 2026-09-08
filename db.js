@@ -10,14 +10,10 @@
 
 const { Pool } = require('pg');
 
-// Create a PostgreSQL connection pool using individual environment variables,
-// falling back to defaults if they aren't provided.
+// Create a PostgreSQL connection pool using the DATABASE_URL environment variable.
+// In production (e.g. deployed on CapRover/Render), SSL is enabled with rejectUnauthorized: false.
 const pool = new Pool({
-  user: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD || '',
-  host: process.env.POSTGRES_HOST || 'localhost',
-  database: process.env.POSTGRES_DB || 'postgres',
-  port: process.env.POSTGRES_PORT ? parseInt(process.env.POSTGRES_PORT, 10) : 5432,
+  connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
