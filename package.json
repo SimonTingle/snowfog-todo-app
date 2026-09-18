@@ -1,14 +1,14 @@
 {
-  "name": "snowfog-todo-app",
+  "name": "project",
   "version": "1.0.0",
   "description": "Full stack todo application",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "build": "node canary.js && tsc",
+    "prepare": "node canary.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "pg": "^8.11.3"
   }
 }
-
